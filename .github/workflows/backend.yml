@@ -1,30 +1,29 @@
 name: Build and Push Docker Images
 
-
 on:
   push:
     branches:
-      - backend # 트리거 , 백엔드 브랜치에 푸시될 때 실행
+      - backend # backend 브랜치에 푸시될 때 실행
 
 jobs:
   build_and_push:
     runs-on: ubuntu-latest
 
     steps:
-      #       도커허브 로그인
+      # 1. DockerHub 로그인
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      #       체크아웃 코드
-      - name: Checkout repositry
+      # 2. Checkout 코드
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      #       MySQL Docker 이미지 빌드 및 푸시
+      # 3. MySQL Docker 이미지 빌드 및 푸시
       - name: Build MySQL Docker image
-        working-directory: db
+        working-directory: db # db 폴더로 이동
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb .
 
@@ -32,14 +31,13 @@ jobs:
         run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
 
-      #       Backend DOcker 이미지 빌드 및 푸시
+      # 4. Backend Docker 이미지 빌드 및 푸시
       - name: Build Backend Docker image
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend .
       - name: Push Backend Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend
-          
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend  
 
   deploy:
     needs: build_and_push
@@ -52,22 +50,18 @@ jobs:
           host: ${{ secrets.LIVE_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            if [ "$(sudo docker ps -a -p -f name=dockerdb)" ]; then
-              sudo docker rm -f docekerdb
+            if [ "$(sudo docker ps -a -q -f name=dockerdb)" ]; then
+              sudo docker rm -f dockerdb
             fi
-            
             if [ "$(sudo docker ps -a -q -f name=dockerbackend)" ]; then
               sudo docker rm -f dockerbackend
             fi
-            
             if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb)" ]; then
               sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
             fi
-            
             if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend)" ]; then
               sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend
             fi
-            
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
             sudo docker run -d -p 3308:3306 --name dockerdb -v dockerdb_volume:/var/lib/mysql ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend
