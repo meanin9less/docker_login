@@ -13,7 +13,6 @@ function Login({ onLogin }) {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-
             const response = await apiClient.post("/login",
                 new URLSearchParams({ username, password }));
             const role=response.data.role;
@@ -44,6 +43,16 @@ function Login({ onLogin }) {
         }
     };
 
+    const handleNaverLogin = ()=>{
+        window.location.href = "/api/naver" // dom객체로 직접 a태그처럼 링크만 바꿈
+    };
+    const handleGoogleLogin = ()=>{
+        window.location.href = "/api/google"
+    };
+    const handleKakaoLogin = ()=>{
+        window.location.href = "/api/kakao"
+    };
+
     return (
         <div>
             <form>
@@ -65,6 +74,10 @@ function Login({ onLogin }) {
                 <button type="button" name="join" onClick={handleJoin}>Join</button>
             </form>
             {message && <p>{message}</p>}
+
+            <button onClick={handleNaverLogin}>로 로그인</button>
+            <button onClick={handleGoogleLogin}>로 로그인</button>
+            <button onClick={handleKakaoLogin}>로 로그인</button>
         </div>
     );
 }
