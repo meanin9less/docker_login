@@ -75,9 +75,9 @@ function Login({ onLogin }) {
             </form>
             {message && <p>{message}</p>}
 
-            <button onClick={handleNaverLogin}>로 로그인</button>
-            <button onClick={handleGoogleLogin}>로 로그인</button>
-            <button onClick={handleKakaoLogin}>로 로그인</button>
+            <button onClick={handleNaverLogin}>네이버로 로그인</button>
+            <button onClick={handleGoogleLogin}>구글로 로그인</button>
+            <button onClick={handleKakaoLogin}>카카오로 로그인</button>
         </div>
     );
 }
